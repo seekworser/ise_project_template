@@ -1,0 +1,13 @@
+src_files:
+  - filename: sample.vhd
+    language: vhdl
+    library: work
+  
+ucf_file: sample_ucf.ucf
+
+top_module: sample_project
+
+part:
+  device: xc6slx9
+  package: tqg144
+  speed: -2

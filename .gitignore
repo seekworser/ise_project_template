@@ -1,0 +1,8 @@
+*.bit
+*.log
+*.lst
+*.ncd
+*_pad.csv
+*.ngc
+*.ngd
+*.pcf

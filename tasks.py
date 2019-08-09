@@ -21,7 +21,7 @@ def create_project_file():
     for item in get_project_parameter(SRC_FILES_KEY):
         language = set_default_on_keyerror(item, LANGUAGE_KEY, LANGUAGE_DEFAULT)
         library = set_default_on_keyerror(item, LIBRARY_KEY, LIBRARY_DEFAULT)
-        filename = item[FILENAME_KEY]
+        filename = item[FILE_NAME_KEY]
         content += "{language:s} {library:s} .{srcdir:s}{filename:s}\n".format(
             language=language,
             library=library,
@@ -150,6 +150,44 @@ _EOT_
     ))
     return
 
+def gdhl_compile(c, file_name, entity_names):
+    with c.cd("{testdir:s}".format(testdir=TESTDIR)):
+        c.run("ghdl -a --ieee=synopsys .{srcdir:s}{file_name:s}".format(
+            srcdir=SRCDIR,
+            file_name=file_name,
+        ))
+        for entity_name in entity_names:
+            c.run("ghdl -e --ieee=synopsys {entity_name:s}".format(
+                srcdir=SRCDIR,
+                entity_name=entity_name,
+            ))
+    return
+
+def ghdl_test_runner(c, entity_name):
+    with c.cd("{testdir:s}".format(testdir=TESTDIR)):
+        c.run("ghdl -r {entity_name:s} --vcd={entity_name:s}.vcd".format(
+            entity_name=entity_name,
+        ))
+    return
+
+def ghdl_clean(c):
+    c.run("rm {testdir:s}*.o {testdir:s}*.cf".format(testdir=TESTDIR))
+
+@invoke.task(iterable=["entity_name"])
+def test(c, entity_name):
+    if not entity_name:
+        entity_name = []
+        for item in get_project_parameter(TEST_FILES_KEY):
+            entity_name += item[ENTITY_NAMES_KEY]
+    for item in get_project_parameter(SRC_FILES_KEY):
+        gdhl_compile(c, item[FILE_NAME_KEY], item[ENTITY_NAMES_KEY])
+    for item in get_project_parameter(TEST_FILES_KEY):
+        gdhl_compile(c, item[FILE_NAME_KEY], item[ENTITY_NAMES_KEY])
+    for item in entity_name:
+        ghdl_test_runner(c, item)
+    ghdl_clean(c)
+    return
+
 @invoke.task
 def build(c):
     xst(c)
@@ -163,15 +201,20 @@ def build(c):
 OUTDIR = "./out/"
 SRCDIR = "./src/"
 LOGDIR = "./log/"
+TESTDIR = "./test/"
 PROJECT_YAML_FILE_NAME = SRCDIR + "project.yaml"
 
 LANGUAGE_DEFAULT = "vhdl"
 LIBRARY_DEFAULT = "work"
 
+SRC_FILES_KEY = "src_files"
 LANGUAGE_KEY = "language"
 LIBRARY_KEY = "library"
-FILENAME_KEY = "filename"
-SRC_FILES_KEY = "src_files"
+FILE_NAME_KEY = "file_name"
+
+TEST_FILES_KEY = "test_files"
+ENTITY_NAMES_KEY = "entity_names"
+
 TOP_MODULE_KEY = "top_module"
 PART_KEY = "part"
 ARCHITECTURE_KEY = "architecture"

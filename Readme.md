@@ -29,6 +29,7 @@ or other commands shown in below.
 - map
 - par
 - bitgen
+- test [-e entity]
 
 # Notification
 

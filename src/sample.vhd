@@ -1,25 +1,23 @@
-library IEEE;
-use IEEE.STD_LOGIC_1164.ALL;
-use IEEE.STD_LOGIC_ARITH.ALL;
-use IEEE.STD_LOGIC_UNSIGNED.ALL;
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.std_logic_arith.all;
+use ieee.std_logic_unsigned.all;
 
-entity sample_project is
+entity sample is
     Port (
-        A : out  STD_LOGIC_VECTOR (15 downto 0);
-        B : out  STD_LOGIC_VECTOR (15 downto 0);
-        C : out  STD_LOGIC_VECTOR (15 downto 0);
-        clk : in STD_LOGIC
+        A : out  std_logic_vector (8 downto 0);
+        clk : in std_logic
     );
-end sample_project;
+end sample;
 
-architecture Behavioral of sample_project is
-    signal counter : STD_LOGIC_VECTOR(47 downto 0) := (others => '0');
-    begin count: process(clk)
-        begin if rising_edge(clk) then
+architecture behavior of sample is
+    signal counter : std_logic_vector(21 downto 0) := (others => '0');
+begin
+    count: process(clk)
+    begin
+        if rising_edge(clk) then
             counter <= counter+1;
         end if;
     end process;
-    A <= counter(35 downto 20);
-    B <= counter(31 downto 16);
-    C <= counter(15 downto 0);
-end Behavioral;
+    A <= counter(21 downto 13);
+end behavior;

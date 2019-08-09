@@ -6,3 +6,6 @@
 *.ngc
 *.ngd
 *.pcf
+test/*
+!test/.keep
+*.o

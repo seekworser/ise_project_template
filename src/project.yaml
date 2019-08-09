@@ -1,11 +1,19 @@
 src_files:
-  - filename: sample.vhd
+  - file_name: sample.vhd
     language: vhdl
     library: work
+    entity_names:
+      - sample
+
+test_files:
+  - file_name: test_sample.vhd
+    entity_names:
+      - test_sample
+      - test_sample2
   
 ucf_file: sample_ucf.ucf
 
-top_module: sample_project
+top_module: sample
 
 part:
   device: xc6slx9

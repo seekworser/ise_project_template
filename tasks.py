@@ -184,5 +184,3 @@ PRJ_FILE_NAME = OUTDIR + get_project_parameter(TOP_MODULE_KEY) + ".prj"
 OPTIONS_FILE_NAME = OUTDIR + get_project_parameter(TOP_MODULE_KEY) + ".options"
 
 ISE_BASE = "/opt/Xilinx/14.7/ISE_DS/ISE/bin/lin64/"
-
-# create_xst_files()

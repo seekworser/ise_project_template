@@ -48,9 +48,7 @@ def part_specifier():
 
 def create_xst_file():
     part = part_specifier()
-    content = """
-        run -ifn {prj_file_name:s} -ifmt mixed -top {top_module} -ofn {outdir:s}{top_module:s}.ngc -ofmt NGC -p {part:s}\n
-    """.format(
+    content = "run -ifn {prj_file_name:s} -ifmt mixed -top {top_module} -ofn {outdir:s}{top_module:s}.ngc -ofmt NGC -p {part:s}\n".format(
         prj_file_name=PRJ_FILE_NAME,
         top_module=get_project_parameter(TOP_MODULE_KEY),
         outdir=OUTDIR,
@@ -64,90 +62,95 @@ def create_xst_file():
 def xst(c):
     create_project_file()
     create_xst_file()
-    c.run("""docker run -i -v $(PWD):/project seekworser/ise_webpack:latest sh <<_EOT_
-cd /project
-{ise_base:s}xst -ifn {outdir:s}{top_module:s}.xst -ofn {logdir:s}{top_module:s}_xst.log
-rm -rf *.srp *.lso xst _xmsgs {outdir:s}*.xst {outdir:s}*.prj
-_EOT_
-    """.format(
-        ise_base=ISE_BASE,
-        top_module=get_project_parameter(TOP_MODULE_KEY),
-        outdir=OUTDIR,
-        logdir=LOGDIR,
-    ))
+    c.run(
+        "docker run --rm -i -v $(PWD):/project seekworser/ise_webpack:latest sh <<_EOT_\n"
+        "cd /project\n"
+        "{ise_base:s}xst -ifn {outdir:s}{top_module:s}.xst -ofn {logdir:s}{top_module:s}_xst.log\n"
+        "rm -rf *.srp *.lso xst _xmsgs {outdir:s}*.xst {outdir:s}*.prj\n"
+        "_EOT_\n".format(
+            ise_base=ISE_BASE,
+            top_module=get_project_parameter(TOP_MODULE_KEY),
+            outdir=OUTDIR,
+            logdir=LOGDIR,
+        )
+    )
     return
 
 @invoke.task
 def ngdbuild(c):
     part = part_specifier()
     ucf = get_project_parameter(UCF_FILE_KEY)
-    c.run("""docker run -i -v $(PWD):/project seekworser/ise_webpack:latest sh <<_EOT_
-cd /project
-{ise_base:s}ngdbuild -p {part:s} -uc {srcdir:s}{ucf:s} -verbose {outdir:s}{top_module:s}.ngc {outdir:s}{top_module:s}.ngd
-mv netlist.lst out
-mv {outdir:s}{top_module:s}.bld {logdir:s}{top_module:s}_ngdbuild.log
-rm -rf _xmsgs xlnx_auto_0_xdb {outdir:s}*.xrpt
-_EOT_
-    """.format(
-        ise_base=ISE_BASE,
-        part=part,
-        ucf=ucf,
-        top_module=get_project_parameter(TOP_MODULE_KEY),
-        outdir=OUTDIR,
-        srcdir=SRCDIR,
-        logdir=LOGDIR,
-    ))
+    c.run(
+        "docker run --rm -i -v $(PWD):/project seekworser/ise_webpack:latest sh <<_EOT_\n"
+        "cd /project\n"
+        "{ise_base:s}ngdbuild -p {part:s} -uc {srcdir:s}{ucf:s} -verbose {outdir:s}{top_module:s}.ngc {outdir:s}{top_module:s}.ngd\n"
+        "mv netlist.lst out\n"
+        "mv {outdir:s}{top_module:s}.bld {logdir:s}{top_module:s}_ngdbuild.log\n"
+        "rm -rf _xmsgs xlnx_auto_0_xdb {outdir:s}*.xrpt\n"
+        "_EOT_".format(
+            ise_base=ISE_BASE,
+            part=part,
+            ucf=ucf,
+            top_module=get_project_parameter(TOP_MODULE_KEY),
+            outdir=OUTDIR,
+            srcdir=SRCDIR,
+            logdir=LOGDIR,
+        )
+    )
     return
 
 @invoke.task
 def map(c):
     part = part_specifier()
-    c.run("""docker run -i -v $(PWD):/project seekworser/ise_webpack:latest sh <<_EOT_
-cd /project
-{ise_base:s}map -detail -w -p {part:s} -logic_opt on -o {outdir:s}{top_module:s}_map.ncd {outdir:s}{top_module:s}.ngd {outdir:s}{top_module:s}.pcf
-mv {outdir:s}*.mrp {logdir:s}{top_module:s}_map.log
-rm -rf _xmsgs {outdir:s}*.map {outdir:s}*.xrpt {outdir:s}*.ngm xilinx_device_details.xml
-_EOT_
-    """.format(
-        ise_base=ISE_BASE,
-        part=part,
-        top_module=get_project_parameter(TOP_MODULE_KEY),
-        outdir=OUTDIR,
-        logdir=LOGDIR,
-    ))
+    c.run(
+        "docker run --rm -i -v $(PWD):/project seekworser/ise_webpack:latest sh <<_EOT_\n"
+        "cd /project\n"
+        "{ise_base:s}map -detail -w -p {part:s} -logic_opt on -o {outdir:s}{top_module:s}_map.ncd {outdir:s}{top_module:s}.ngd {outdir:s}{top_module:s}.pcf\n"
+        "mv {outdir:s}*.mrp {logdir:s}{top_module:s}_map.log\n"
+        "rm -rf _xmsgs {outdir:s}*.map {outdir:s}*.xrpt {outdir:s}*.ngm xilinx_device_details.xml\n"
+        "_EOT_".format(
+            ise_base=ISE_BASE,
+            part=part,
+            top_module=get_project_parameter(TOP_MODULE_KEY),
+            outdir=OUTDIR,
+            logdir=LOGDIR,
+        )
+    )
     return
 
 @invoke.task
 def par(c):
-    c.run("""docker run -i -v $(PWD):/project seekworser/ise_webpack:latest sh <<_EOT_
-cd /project
-{ise_base:s}par -w -mt 4 -ol high {outdir:s}{top_module:s}_map.ncd {outdir:s}{top_module:s}.ncd {outdir:s}{top_module:s}.pcf
-rm -rf _xmsgs par_usage_statistics.html *.xrpt {outdir:s}*.ptwx {outdir:s}*.txt {outdir:s}*.unroutes {outdir:s}*.xpi {outdir:s}*.pad
-mv {outdir:s}*.par {logdir:s}{top_module:s}_par.log
-_EOT_
-    """.format(
-        ise_base=ISE_BASE,
-        top_module=get_project_parameter(TOP_MODULE_KEY),
-        outdir=OUTDIR,
-        logdir=LOGDIR,
-    ))
+    c.run(
+        "docker run --rm -i -v $(PWD):/project seekworser/ise_webpack:latest sh <<_EOT_\n"
+        "cd /project\n"
+        "{ise_base:s}par -w -mt 4 -ol high {outdir:s}{top_module:s}_map.ncd {outdir:s}{top_module:s}.ncd {outdir:s}{top_module:s}.pcf\n"
+        "rm -rf _xmsgs par_usage_statistics.html *.xrpt {outdir:s}*.ptwx {outdir:s}*.txt {outdir:s}*.unroutes {outdir:s}*.xpi {outdir:s}*.pad\n"
+        "mv {outdir:s}*.par {logdir:s}{top_module:s}_par.log\n"
+        "_EOT_".format(
+            ise_base=ISE_BASE,
+            top_module=get_project_parameter(TOP_MODULE_KEY),
+            outdir=OUTDIR,
+            logdir=LOGDIR,
+        )
+    )
     return
 
 @invoke.task
 def bitgen(c):
-    c.run("""docker run -i -v $(PWD):/project seekworser/ise_webpack:latest sh <<_EOT_
-cd /project
-{ise_base:s}bitgen -w {outdir:s}{top_module:s}.ncd {top_module:s}.bit {outdir:s}{top_module:s}.pcf
-mv *.drc {logdir:s}{top_module:s}_drc.log
-mv *.bgn {logdir:s}{top_module:s}_bitgen.log
-rm -rf *.xwbt _xmsgs xilinx_device_details.xml *.xrpt
-_EOT_
-    """.format(
-        ise_base=ISE_BASE,
-        top_module=get_project_parameter(TOP_MODULE_KEY),
-        outdir=OUTDIR,
-        logdir=LOGDIR,
-    ))
+    c.run(
+        "docker run --rm -i -v $(PWD):/project seekworser/ise_webpack:latest sh <<_EOT_\n"
+        "cd /project\n"
+        "{ise_base:s}bitgen -w {outdir:s}{top_module:s}.ncd {top_module:s}.bit {outdir:s}{top_module:s}.pcf\n"
+        "mv *.drc {logdir:s}{top_module:s}_drc.log\n"
+        "mv *.bgn {logdir:s}{top_module:s}_bitgen.log\n"
+        "rm -rf *.xwbt _xmsgs xilinx_device_details.xml *.xrpt\n"
+        "_EOT_".format(
+            ise_base=ISE_BASE,
+            top_module=get_project_parameter(TOP_MODULE_KEY),
+            outdir=OUTDIR,
+            logdir=LOGDIR,
+        )
+    )
     return
 
 def gdhl_compile(c, file_name, entity_names):

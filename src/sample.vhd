@@ -4,8 +4,8 @@ use ieee.std_logic_arith.all;
 use ieee.std_logic_unsigned.all;
 
 entity sample is
-    Port (
-        A : out  std_logic_vector (8 downto 0);
+    port (
+        a : out  std_logic_vector (8 downto 0);
         clk : in std_logic
     );
 end sample;
@@ -19,5 +19,5 @@ begin
             counter <= counter+1;
         end if;
     end process;
-    A <= counter(21 downto 13);
+    a <= counter(21 downto 13);
 end behavior;

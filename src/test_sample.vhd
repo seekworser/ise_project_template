@@ -8,17 +8,17 @@ end test_sample;
 
 architecture behavior of test_sample is
     component sample is
-        Port (
+        port (
             clk: in std_logic;
-            A: out std_logic_vector (8 downto 0)
+            a: out std_logic_vector (8 downto 0)
         );
     end component;
     signal clk: std_logic;
-    signal A: std_logic_vector (8 downto 0);
+    signal a: std_logic_vector (8 downto 0);
 begin 
     u1: sample port map(
         clk => clk,
-        A => A
+        a => a
     );
     process
     begin
@@ -42,17 +42,17 @@ end test_sample2;
 
 architecture behavior of test_sample2 is
     component sample is
-        Port (
+        port (
             clk: in std_logic;
-            A: out std_logic_vector (8 downto 0)
+            a: out std_logic_vector (8 downto 0)
         );
     end component;
     signal clk: std_logic;
-    signal A: std_logic_vector (8 downto 0);
+    signal a: std_logic_vector (8 downto 0);
 begin 
     u1: sample port map(
         clk => clk,
-        A => A
+        a => a
     );
     process
     begin
